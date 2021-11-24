@@ -1,21 +1,22 @@
 { pkgs ? import <nixpkgs> {}
-, python ? pkgs.python39
 , mkDerivation ? pkgs.stdenv.mkDerivation
 }:
 mkDerivation rec {
     name = "stregsystem-cli";
-    src = ./main.py;
+    src = ./.;
 
-	python = python.withPackages (pypkgs: [ pypkgs.requests ])
-	buildInputs = [
+	python = pkgs.python39.withPackages (pypkgs: [ pypkgs.requests ]);
+
+	nativeBuildInputs = [
     	python
 	];
 
-    dontUnpack = true;
     dontBuild = true;
     installPhase = ''
     	mkdir -p $out/bin
-		cp $src $out/bin/sts
+    	substituteInPlace ./main.py \
+    		--replace "#!/usr/bin/env python3" "#!${python}/bin/python"
+		cp ./main.py $out/bin/sts
 		chmod +x $out/bin/sts
 	'';
 }
